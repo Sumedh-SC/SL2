@@ -11,17 +11,17 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# ===================================================
-# PAGE CONFIG (FULL SCREEN)
-# ===================================================
+# ---------------------------------------------------
+# FULL SCREEN LAYOUT
+# ---------------------------------------------------
 st.set_page_config(
-    page_title="Biogas & Coal Blending Emissions Model",
+    page_title="Biogas–Coal Blending Emission Calculator",
     layout="wide"
 )
 
-# ===================================================
-# 1. REFERENCE COAL PLANT DATA
-# ===================================================
+# ---------------------------------------------------
+# REAL COAL PLANT DATA (REFERENCE ONLY)
+# ---------------------------------------------------
 plants_data = [
     {'plant_name':'North Karanpura STPP','coal_tons':7969147,'TSP':23907,'PM10':14344,'PM2.5':12910,'SO2':55784},
     {'plant_name':'Patratu STPP','coal_tons':8229144,'TSP':28802,'PM10':17281,'PM2.5':15553,'SO2':41146},
@@ -35,10 +35,10 @@ plants_data = [
 
 df_plants = pd.DataFrame(plants_data)
 
-# ===================================================
-# 2. BIOGAS EMISSION FACTORS (LITERATURE-SYNTHESISED)
-# ===================================================
-# kg pollutant per ton biogas (averaged from multiple studies)
+# ---------------------------------------------------
+# LITERATURE-AVERAGED BIOGAS EMISSION FACTORS
+# (kg pollutant / ton biogas)
+# ---------------------------------------------------
 biogas_EF_literature = {
     "TSP":   [0.040, 0.045, 0.050, 0.055, 0.048],
     "PM10":  [0.035, 0.040, 0.045, 0.050, 0.042],
@@ -47,66 +47,75 @@ biogas_EF_literature = {
     "NOx":   [0.45,  0.50,  0.55,  0.60,  0.48]
 }
 
-# Convert to tons pollutant / ton biogas
-biogas_EF = {
-    pol: np.mean(vals) / 1000
-    for pol, vals in biogas_EF_literature.items()
-}
+# Convert to tons/ton (fixed values used internally)
+biogas_EF = {pol: np.mean(vals)/1000 for pol, vals in biogas_EF_literature.items()}
 
-# ===================================================
-# 3. STREAMLIT UI
-# ===================================================
-st.title("Biogas & Coal Blending Emissions Model")
-st.subheader("Emission impact assessment using biogas co-firing")
+# ---------------------------------------------------
+# REALISTIC CONTROL SYSTEM DEGRADATION (5%)
+# ---------------------------------------------------
+CONTROL_DEGRADATION = 0.95
+
+# ---------------------------------------------------
+# STREAMLIT UI
+# ---------------------------------------------------
+st.title("Biogas–Coal Blending Emission Calculator")
+st.subheader("Plant-level emission impact assessment with realistic control-system performance")
 
 st.markdown("---")
-
-st.header("Plant Input Data")
 
 col1, col2 = st.columns(2)
 
 with col1:
     coal_consumption = st.number_input(
-        "Annual Coal Consumption (tons/year)",
+        "Annual fuel requirement (tons/year)",
         min_value=0.0,
         value=1_000_000.0
     )
 
 with col2:
     biogas_frac = st.slider(
-        "Biogas Blending Fraction",
-        0.0, 1.0, 0.0
+        "Biogas blending fraction",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.2,
+        step=0.05
     )
 
-st.markdown("### Baseline Emissions (Coal-only, post-control)")
+coal_frac = 1 - biogas_frac
+
+st.markdown("### Baseline Coal Emissions (tons/year)")
 
 col3, col4, col5, col6 = st.columns(4)
 
 with col3:
-    TSP_in = st.number_input("TSP (tons/year)", min_value=0.0, value=500.0)
+    TSP_in = st.number_input("TSP", min_value=0.0, value=500.0)
 with col4:
-    PM10_in = st.number_input("PM10 (tons/year)", min_value=0.0, value=400.0)
+    PM10_in = st.number_input("PM10", min_value=0.0, value=400.0)
 with col5:
-    PM25_in = st.number_input("PM2.5 (tons/year)", min_value=0.0, value=300.0)
+    PM25_in = st.number_input("PM2.5", min_value=0.0, value=300.0)
 with col6:
-    SO2_in = st.number_input("SO2 (tons/year)", min_value=0.0, value=800.0)
+    SO2_in = st.number_input("SO₂", min_value=0.0, value=800.0)
 
-st.markdown("### Pollution Control Systems (Applied only to biogas increment)")
+st.markdown("### Pollution Control Systems")
 
 col7, col8 = st.columns(2)
 
 with col7:
-    ESP = st.slider("ESP Efficiency (%)", 0, 100, 90)
+    ESP = st.slider("ESP efficiency (%)", 0, 100, 90)
+
 with col8:
-    FGD = st.slider("FGD Efficiency (%)", 0, 100, 70)
+    FGD = st.slider("FGD efficiency (%)", 0, 100, 70)
 
-# ===================================================
-# 4. CORRECTED CALCULATIONS (NO DOUBLE COUNTING)
-# ===================================================
-coal_share = 1 - biogas_frac
-bio_share = biogas_frac
+# ---------------------------------------------------
+# EFFECTIVE EFFICIENCIES (WITH 5% PENALTY)
+# ---------------------------------------------------
+effective_ESP = (ESP / 100) * CONTROL_DEGRADATION
+effective_FGD = (FGD / 100) * CONTROL_DEGRADATION
 
-coal_baseline = {
+# ---------------------------------------------------
+# CALCULATIONS
+# ---------------------------------------------------
+baseline = {
     "TSP": TSP_in,
     "PM10": PM10_in,
     "PM2.5": PM25_in,
@@ -116,44 +125,49 @@ coal_baseline = {
 
 results = {}
 
-for pol in coal_baseline:
+for pol in baseline:
+    coal_part = baseline[pol] * coal_frac
+    bio_part = biogas_EF.get(pol, 0) * coal_consumption * biogas_frac
+    total = coal_part + bio_part
 
-    baseline = coal_baseline[pol]
-
-    # Biogas emissions (zero if bio_share = 0)
-    bio_part = biogas_EF.get(pol, 0) * coal_consumption * bio_share
-
-    # Apply control ONLY to biogas
     if pol in ["TSP", "PM10", "PM2.5"]:
-        bio_part *= (1 - ESP / 100)
+        total *= (1 - effective_ESP)
 
     if pol == "SO2":
-        bio_part *= (1 - FGD / 100)
+        total *= (1 - effective_FGD)
 
-    # Final emission
-    results[pol] = baseline * coal_share + bio_part
+    results[pol] = total
 
-# ===================================================
-# 5. OUTPUT
-# ===================================================
+# ---------------------------------------------------
+# OUTPUT TABLE
+# ---------------------------------------------------
 df_out = pd.DataFrame({
-    "Pollutant": list(coal_baseline.keys()),
-    "Baseline Emissions (tons/year)": list(coal_baseline.values()),
-    "Blended Emissions (tons/year)": [results[p] for p in coal_baseline],
+    "Pollutant": baseline.keys(),
+    "Coal Share (%)": [coal_frac * 100] * len(baseline),
+    "Biogas Share (%)": [biogas_frac * 100] * len(baseline),
+    "Baseline Emissions (t/y)": baseline.values(),
+    "Post-Blend Emissions (t/y)": results.values(),
     "Reduction (%)": [
-        round((1 - results[p] / coal_baseline[p]) * 100, 2)
-        if coal_baseline[p] > 0 else "N/A"
-        for p in coal_baseline
+        round((1 - results[p] / baseline[p]) * 100, 2) if baseline[p] > 0 else "N/A"
+        for p in baseline
     ]
 })
 
 st.markdown("## Final Results")
 st.dataframe(df_out, use_container_width=True)
 
+# ---------------------------------------------------
+# SUMMARY
+# ---------------------------------------------------
 st.markdown("## Summary")
 
+st.info(
+    f"""
+    **Fuel Mix:** {coal_frac*100:.1f}% Coal + {biogas_frac*100:.1f}% Biogas
+    **ESP & FGD performance reduced by 5%** to reflect real operating conditions.
+    """
+)
+
 for pol in ["TSP", "PM10", "PM2.5", "SO2"]:
-    reduction = df_out.loc[
-        df_out["Pollutant"] == pol, "Reduction (%)"
-    ].values[0]
+    reduction = df_out.loc[df_out["Pollutant"] == pol, "Reduction (%)"].values[0]
     st.success(f"**{pol} Reduction:** {reduction}%")
