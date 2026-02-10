@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------
-# REAL COAL PLANT DATA (REFERENCE ONLY)
+# REAL COAL PLANT DATA (FOR COAL EF)
 # ---------------------------------------------------
 plants_data = [
     {'plant_name':'North Karanpura STPP','coal_tons':7969147,'TSP':23907,'PM10':14344,'PM2.5':12910,'SO2':55784},
@@ -35,31 +35,38 @@ plants_data = [
 
 df_plants = pd.DataFrame(plants_data)
 
+pollutants = ["TSP", "PM10", "PM2.5", "SO2"]
+
 # ---------------------------------------------------
-# LITERATURE-AVERAGED BIOGAS EMISSION FACTORS
-# (kg pollutant / ton biogas)
+# COAL EMISSION FACTORS (tons pollutant / ton coal)
+# ---------------------------------------------------
+coal_EF = {
+    pol: (df_plants[pol] / df_plants["coal_tons"]).mean()
+    for pol in pollutants
+}
+
+# ---------------------------------------------------
+# BIOGAS EMISSION FACTORS (kg/ton → tons/ton)
 # ---------------------------------------------------
 biogas_EF_literature = {
     "TSP":   [0.040, 0.045, 0.050, 0.055, 0.048],
     "PM10":  [0.035, 0.040, 0.045, 0.050, 0.042],
     "PM2.5": [0.015, 0.018, 0.020, 0.022, 0.017],
     "SO2":   [0.006, 0.008, 0.010, 0.012, 0.009],
-    "NOx":   [0.45,  0.50,  0.55,  0.60,  0.48]
 }
 
-# Convert to tons/ton (fixed values used internally)
 biogas_EF = {pol: np.mean(vals)/1000 for pol, vals in biogas_EF_literature.items()}
 
 # ---------------------------------------------------
-# REALISTIC CONTROL SYSTEM DEGRADATION (5%)
+# CONTROL SYSTEM DEGRADATION (5%)
 # ---------------------------------------------------
 CONTROL_DEGRADATION = 0.95
 
 # ---------------------------------------------------
-# STREAMLIT UI
+# UI
 # ---------------------------------------------------
 st.title("Biogas–Coal Blending Emission Calculator")
-st.subheader("Plant-level emission impact assessment with realistic control-system performance")
+st.subheader("Realistic emission reductions with control-system degradation")
 
 st.markdown("---")
 
@@ -75,27 +82,37 @@ with col1:
 with col2:
     biogas_frac = st.slider(
         "Biogas blending fraction",
-        min_value=0.0,
-        max_value=1.0,
-        value=0.2,
-        step=0.05
+        0.0, 1.0, 0.2, 0.05
     )
 
 coal_frac = 1 - biogas_frac
 
+# ---------------------------------------------------
+# BASELINE EMISSIONS
+# ---------------------------------------------------
 st.markdown("### Baseline Coal Emissions (tons/year)")
 
 col3, col4, col5, col6 = st.columns(4)
 
 with col3:
-    TSP_in = st.number_input("TSP", min_value=0.0, value=500.0)
+    TSP_in = st.number_input("TSP", min_value=0.0, value=0.0)
 with col4:
-    PM10_in = st.number_input("PM10", min_value=0.0, value=400.0)
+    PM10_in = st.number_input("PM10", min_value=0.0, value=0.0)
 with col5:
-    PM25_in = st.number_input("PM2.5", min_value=0.0, value=300.0)
+    PM25_in = st.number_input("PM2.5", min_value=0.0, value=0.0)
 with col6:
-    SO2_in = st.number_input("SO₂", min_value=0.0, value=800.0)
+    SO2_in = st.number_input("SO₂", min_value=0.0, value=0.0)
 
+baseline = {
+    "TSP": TSP_in if TSP_in > 0 else coal_EF["TSP"] * coal_consumption,
+    "PM10": PM10_in if PM10_in > 0 else coal_EF["PM10"] * coal_consumption,
+    "PM2.5": PM25_in if PM25_in > 0 else coal_EF["PM2.5"] * coal_consumption,
+    "SO2": SO2_in if SO2_in > 0 else coal_EF["SO2"] * coal_consumption
+}
+
+# ---------------------------------------------------
+# CONTROL SYSTEM INPUTS
+# ---------------------------------------------------
 st.markdown("### Pollution Control Systems")
 
 col7, col8 = st.columns(2)
@@ -106,35 +123,30 @@ with col7:
 with col8:
     FGD = st.slider("FGD efficiency (%)", 0, 100, 70)
 
-# ---------------------------------------------------
-# EFFECTIVE EFFICIENCIES (WITH 5% PENALTY)
-# ---------------------------------------------------
 effective_ESP = (ESP / 100) * CONTROL_DEGRADATION
 effective_FGD = (FGD / 100) * CONTROL_DEGRADATION
 
 # ---------------------------------------------------
 # CALCULATIONS
 # ---------------------------------------------------
-baseline = {
-    "TSP": TSP_in,
-    "PM10": PM10_in,
-    "PM2.5": PM25_in,
-    "SO2": SO2_in,
-    "NOx": 0.0
-}
-
 results = {}
 
 for pol in baseline:
-    coal_part = baseline[pol] * coal_frac
-    bio_part = biogas_EF.get(pol, 0) * coal_consumption * biogas_frac
-    total = coal_part + bio_part
+    # Coal emissions reduced ONLY by blending
+    coal_emissions = baseline[pol] * coal_frac
 
-    if pol in ["TSP", "PM10", "PM2.5"]:
-        total *= (1 - effective_ESP)
+    # Biogas emissions
+    biogas_emissions = biogas_EF[pol] * coal_consumption * biogas_frac
 
-    if pol == "SO2":
-        total *= (1 - effective_FGD)
+    total = coal_emissions + biogas_emissions
+
+    # Controls apply ONLY to incremental benefit
+    if biogas_frac > 0:
+        if pol in ["TSP", "PM10", "PM2.5"]:
+            total += baseline[pol] * biogas_frac * (1 - effective_ESP)
+
+        if pol == "SO2":
+            total += baseline[pol] * biogas_frac * (1 - effective_FGD)
 
     results[pol] = total
 
@@ -143,12 +155,12 @@ for pol in baseline:
 # ---------------------------------------------------
 df_out = pd.DataFrame({
     "Pollutant": baseline.keys(),
-    "Coal Share (%)": [coal_frac * 100] * len(baseline),
-    "Biogas Share (%)": [biogas_frac * 100] * len(baseline),
+    "Coal Share (%)": coal_frac * 100,
+    "Biogas Share (%)": biogas_frac * 100,
     "Baseline Emissions (t/y)": baseline.values(),
     "Post-Blend Emissions (t/y)": results.values(),
     "Reduction (%)": [
-        round((1 - results[p] / baseline[p]) * 100, 2) if baseline[p] > 0 else "N/A"
+        round((1 - results[p] / baseline[p]) * 100, 2)
         for p in baseline
     ]
 })
@@ -163,11 +175,8 @@ st.markdown("## Summary")
 
 st.info(
     f"""
-    **Fuel Mix:** {coal_frac*100:.1f}% Coal + {biogas_frac*100:.1f}% Biogas
-    **ESP & FGD performance reduced by 5%** to reflect real operating conditions.
+    • **Biogas blending applied:** {biogas_frac*100:.1f}%
+    • **ESP & FGD efficiencies internally reduced by 5%**
+    • **No reduction shown at 0% biogas blending**
     """
 )
-
-for pol in ["TSP", "PM10", "PM2.5", "SO2"]:
-    reduction = df_out.loc[df_out["Pollutant"] == pol, "Reduction (%)"].values[0]
-    st.success(f"**{pol} Reduction:** {reduction}%")
