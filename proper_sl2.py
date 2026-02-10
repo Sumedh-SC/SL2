@@ -180,3 +180,37 @@ st.info(
     • **No reduction shown at 0% biogas blending**
     """
 )
+
+# ---------------------------------------------------
+# NOx INTERPRETATION (TEXT ONLY, DYNAMIC)
+# ---------------------------------------------------
+
+# Typical coal NOx emission factor (kg/ton coal → tons/ton)
+NOX_EF_COAL = 6.0 / 1000  # 6 kg NOx / ton coal
+
+# Baseline NOx emissions (tons/year)
+baseline_nox = NOX_EF_COAL * coal_consumption
+
+# NOx increase due to biogas co-firing (up to 5%)
+NOX_BUFFER = 0.05
+nox_increase = baseline_nox * biogas_frac * NOX_BUFFER
+
+st.markdown("## NOx Impact Interpretation")
+
+st.warning(
+    f"""
+    **NOx emissions note (indicative estimate)**
+
+    • NOx is **not controlled** by ESP or FGD systems.
+    • During biogas–coal co-firing, higher flame temperature and excess oxygen
+      availability may lead to **slightly increased thermal NOx formation**.
+    • A **5% buffer reduction in NOx effectiveness** has been conservatively assumed
+      to reflect this behavior.
+
+    **Estimated additional NOx due to biogas blending:**
+    • **Biogas blending:** {biogas_frac*100:.1f}%
+    • **Estimated NOx increase:** **{nox_increase:.2f} tons/year**
+
+    This estimate is indicative and intended for **planning-level assessment**,
+    not regulatory compliance.
+    """
