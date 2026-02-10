@@ -214,3 +214,4 @@ st.warning(
     This estimate is indicative and intended for **planning-level assessment**,
     not regulatory compliance.
     """
+)
