@@ -1,822 +1,472 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
 
 
-{
-  "nbformat": 4,
-  "nbformat_minor": 0,
-  "metadata": {
-    "colab": {
-      "provenance": [],
-      "authorship_tag": "ABX9TyNEJTfy8TH2HVWZm91rpLSM",
-      "include_colab_link": True
-    },
-    "kernelspec": {
-      "name": "python3",
-      "display_name": "Python 3"
-    },
-    "language_info": {
-      "name": "python"
-    }
-  },
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "view-in-github",
-        "colab_type": "text"
-      },
-      "source": [
-        "<a href=\"https://colab.research.google.com/github/Sumedh-SC/SL2/blob/main/RTPP%20LAb.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": None,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "collapsed": True,
-        "id": "EsfwwDw9KT4Q",
-        "outputId": "fcca7c27-4a17-4f3b-a988-3976ee802aa7"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Collecting streamlit\n",
-            "  Downloading streamlit-1.67.0-py3-none-any.whl.metadata (10 kB)\n",
-            "Requirement already satisfied: pandas in /usr/local/lib/python3.13/dist-packages (2.2.3)\n",
-            "Requirement already satisfied: numpy in /usr/local/lib/python3.13/dist-packages (2.4.6)\n",
-            "Requirement already satisfied: plotly in /usr/local/lib/python3.13/dist-packages (5.24.1)\n",
-            "Requirement already satisfied: altair!=5.4.0,!=5.4.1,<7,>=5.0.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (5.5.0)\n",
-            "Requirement already satisfied: click<9,>=7.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (8.5.0)\n",
-            "Requirement already satisfied: packaging>=20 in /usr/local/lib/python3.13/dist-packages (from streamlit) (26.3)\n",
-            "Requirement already satisfied: pillow<14,>=9.2.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (11.3.0)\n",
-            "Collecting pydeck<1,>=0.8.0b4 (from streamlit)\n",
-            "  Downloading pydeck-0.9.3-py2.py3-none-any.whl.metadata (4.2 kB)\n",
-            "Requirement already satisfied: protobuf<8,>=5.26.1 in /usr/local/lib/python3.13/dist-packages (from streamlit) (6.33.6)\n",
-            "Requirement already satisfied: pyarrow!=25.0.0,<27,>=12.0.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (23.0.1)\n",
-            "Requirement already satisfied: requests<3,>=2.27 in /usr/local/lib/python3.13/dist-packages (from streamlit) (2.32.4)\n",
-            "Requirement already satisfied: typing-extensions<5,>=4.10.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (4.16.0)\n",
-            "Requirement already satisfied: starlette<2,>=0.46.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (1.10.0)\n",
-            "Requirement already satisfied: uvicorn<1,>=0.30.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (0.54.0)\n",
-            "Requirement already satisfied: anyio<5,>=4.0.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (4.16.0)\n",
-            "Requirement already satisfied: python-multipart<1,>=0.0.10 in /usr/local/lib/python3.13/dist-packages (from streamlit) (0.0.33)\n",
-            "Requirement already satisfied: websockets<18,>=12.0.0 in /usr/local/lib/python3.13/dist-packages (from streamlit) (15.0.1)\n",
-            "Requirement already satisfied: itsdangerous<3,>=2.1.2 in /usr/local/lib/python3.13/dist-packages (from streamlit) (2.2.0)\n",
-            "Requirement already satisfied: watchdog<8,>=2.1.5 in /usr/local/lib/python3.13/dist-packages (from streamlit) (6.0.0)\n",
-            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.13/dist-packages (from pandas) (2.9.0.post0)\n",
-            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.13/dist-packages (from pandas) (2025.2)\n",
-            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.13/dist-packages (from pandas) (2026.6)\n",
-            "Requirement already satisfied: jinja2 in /usr/local/lib/python3.13/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (3.1.6)\n",
-            "Requirement already satisfied: jsonschema>=3.0 in /usr/local/lib/python3.13/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (4.26.0)\n",
-            "Requirement already satisfied: narwhals>=1.14.2 in /usr/local/lib/python3.13/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (2.28.0)\n",
-            "Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.13/dist-packages (from anyio<5,>=4.0.0->streamlit) (3.20)\n",
-            "Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.13/dist-packages (from requests<3,>=2.27->streamlit) (3.4.9)\n",
-            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.13/dist-packages (from requests<3,>=2.27->streamlit) (2.5.0)\n",
-            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.13/dist-packages (from requests<3,>=2.27->streamlit) (2026.10.23)\n",
-            "Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.13/dist-packages (from uvicorn<1,>=0.30.0->streamlit) (0.16.0)\n",
-            "Requirement already satisfied: tenacity>=6.2.0 in /usr/local/lib/python3.13/dist-packages (from plotly) (9.1.4)\n",
-            "Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.13/dist-packages (from jinja2->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (3.0.4)\n",
-            "Requirement already satisfied: attrs>=22.2.0 in /usr/local/lib/python3.13/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (26.1.0)\n",
-            "Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.13/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (2025.9.1)\n",
-            "Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.13/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (0.37.0)\n",
-            "Requirement already satisfied: rpds-py>=0.25.0 in /usr/local/lib/python3.13/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit) (2026.9.1)\n",
-            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.13/dist-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)\n",
-            "Downloading streamlit-1.67.0-py3-none-any.whl (11.2 MB)\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m11.2/11.2 MB\u001b[0m \u001b[31m13.6 MB/s\u001b[0m  \u001b[33m0:00:00\u001b[0m\n",
-            "\u001b[?25hDownloading pydeck-0.9.3-py2.py3-none-any.whl (11.4 MB)\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m11.4/11.4 MB\u001b[0m \u001b[31m18.4 MB/s\u001b[0m  \u001b[33m0:00:00\u001b[0m\n",
-            "\u001b[?25hInstalling collected packages: pydeck, streamlit\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m2/2\u001b[0m [streamlit]\n",
-            "\u001b[1A\u001b[2KSuccessfully installed pydeck-0.9.3 streamlit-1.67.0\n"
-          ]
-        }
-      ],
-      "source": [
-        "pip install streamlit pandas numpy plotly"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        "\n",
-        "import streamlit as st\n",
-        "import pandas as pd\n",
-        "import numpy as np\n",
-        "import plotly.express as px\n",
-        "import calendar\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# PAGE CONFIGURATION\n",
-        "# --------------------------------------------------\n",
-        "st.set_page_config(\n",
-        "    page_title=\"Building Energy Analysis\",\n",
-        "    page_icon=\"⚡\",\n",
-        "    layout=\"wide\"\n",
-        ")\n",
-        "\n",
-        "st.title(\"⚡ Building Energy Demand Analysis\")\n",
-        "st.caption(\"Historical consumption, daily load profile and annual projection\")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 1. HISTORICAL 2024 MONTHLY DATA\n",
-        "# --------------------------------------------------\n",
-        "months = [\n",
-        "    \"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\",\n",
-        "    \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\"\n",
-        "]\n",
-        "\n",
-        "heating_2024 = [\n",
-        "    191220, 111450, 117870, 100460, 78950, 78930,\n",
-        "    81610, 80380, 83082, 96178, 143340, 190890\n",
-        "]\n",
-        "\n",
-        "electricity_2024 = [\n",
-        "    116377, 109825, 119021, 120491, 132937, 147036,\n",
-        "    159972, 166841, 136687, 124326, 115590, 117714\n",
-        "]\n",
-        "\n",
-        "historical = pd.DataFrame({\n",
-        "    \"Month\": months,\n",
-        "    \"Heating_kWh\": heating_2024,\n",
-        "    \"Electricity_kWh\": electricity_2024\n",
-        "})\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 2. 15-MINUTE PROFILE: 22 OCTOBER 2025\n",
-        "# --------------------------------------------------\n",
-        "load_values = [\n",
-        "    8.96, 8.34, 8.68, 8.38,\n",
-        "    9.03, 8.43, 9.03, 8.73,\n",
-        "    9.43, 9.13, 9.16, 8.84,\n",
-        "    9.67, 10.62, 10.65, 11.04,\n",
-        "    10.17, 10.71, 10.37, 10.74,\n",
-        "    10.83, 10.87, 11.31, 10.51,\n",
-        "    10.44, 10.99, 11.06, 11.10,\n",
-        "    10.47, 10.46, 10.16, 10.77,\n",
-        "    10.38, 10.29, 10.02, 9.96,\n",
-        "    9.99, 9.95, 9.30, 9.60,\n",
-        "    9.28, 10.56, 9.60, 9.60,\n",
-        "    8.96, 9.28, 9.92, 8.96,\n",
-        "    8.64, 8.64, 8.64, 9.60,\n",
-        "    8.64, 8.64, 8.64, 8.64,\n",
-        "    9.60, 8.64, 8.96, 8.32,\n",
-        "    9.28, 9.28, 8.64, 8.96\n",
-        "]\n",
-        "\n",
-        "observed = pd.DataFrame({\n",
-        "    \"Time\": pd.date_range(\n",
-        "        \"2025-10-22 08:00\",\n",
-        "        periods=64,\n",
-        "        freq=\"15min\"\n",
-        "    ),\n",
-        "    \"Load_kW\": load_values\n",
-        "})\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 3. SIDEBAR: MODEL ASSUMPTIONS\n",
-        "# --------------------------------------------------\n",
-        "st.sidebar.header(\"Projection assumptions\")\n",
-        "\n",
-        "projection_year = st.sidebar.selectbox(\n",
-        "    \"Projection year\",\n",
-        "    [2025, 2026, 2027, 2028]\n",
-        ")\n",
-        "\n",
-        "growth = st.sidebar.slider(\n",
-        "    \"Annual electricity growth (%)\",\n",
-        "    min_value=-20.0,\n",
-        "    max_value=30.0,\n",
-        "    value=0.0,\n",
-        "    step=1.0\n",
-        ")\n",
-        "\n",
-        "heating_growth = st.sidebar.slider(\n",
-        "    \"Annual heating growth (%)\",\n",
-        "    min_value=-20.0,\n",
-        "    max_value=30.0,\n",
-        "    value=0.0,\n",
-        "    step=1.0\n",
-        ")\n",
-        "\n",
-        "st.sidebar.subheader(\"Missing overnight measurements\")\n",
-        "\n",
-        "night_average = float(np.mean(load_values[48:]))\n",
-        "\n",
-        "overnight_load = st.sidebar.number_input(\n",
-        "    \"Assumed average load (00:00–08:00) in kW\",\n",
-        "    min_value=0.0,\n",
-        "    max_value=1000.0,\n",
-        "    value=round(night_average, 2),\n",
-        "    step=0.1\n",
-        ")\n",
-        "\n",
-        "st.sidebar.caption(\n",
-        "    \"The 00:00–08:00 period is not measured. \"\n",
-        "    \"This assumption is used only to construct a \"\n",
-        "    \"complete synthetic 24-hour profile.\"\n",
-        ")\n",
-        "\n",
-        "st.sidebar.subheader(\"Emission factor\")\n",
-        "\n",
-        "emission_factor = st.sidebar.number_input(\n",
-        "    \"Grid emission factor (kg CO2/kWh)\",\n",
-        "    min_value=0.0,\n",
-        "    max_value=2.0,\n",
-        "    value=0.35,\n",
-        "    step=0.01\n",
-        ")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 4. BUILD 24-HOUR LOAD PROFILE\n",
-        "# --------------------------------------------------\n",
-        "# The first 32 intervals represent 00:00–07:45.\n",
-        "# These are estimated, not measured.\n",
-        "\n",
-        "overnight = [overnight_load] * 32\n",
-        "\n",
-        "daily_profile = np.array(overnight + load_values)\n",
-        "\n",
-        "daily_times = pd.date_range(\n",
-        "    \"00:00\",\n",
-        "    periods=96,\n",
-        "    freq=\"15min\"\n",
-        ")\n",
-        "\n",
-        "daily_df = pd.DataFrame({\n",
-        "    \"Time\": daily_times.strftime(\"%H:%M\"),\n",
-        "    \"Load_kW\": daily_profile,\n",
-        "    \"Status\": (\n",
-        "        [\"Estimated\"] * 32 + [\"Measured\"] * 64\n",
-        "    )\n",
-        "})\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 5. SEASONAL CLASSIFICATION\n",
-        "# --------------------------------------------------\n",
-        "def get_season(month):\n",
-        "    if month in [12, 1, 2]:\n",
-        "        return \"Winter\"\n",
-        "    elif month in [3, 4, 5]:\n",
-        "        return \"Spring\"\n",
-        "    elif month in [6, 7, 8]:\n",
-        "        return \"Summer\"\n",
-        "    return \"Autumn\"\n",
-        "\n",
-        "season_order = [\"Winter\", \"Spring\", \"Summer\", \"Autumn\"]\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 6. GENERATE ANNUAL 15-MINUTE PROJECTION\n",
-        "# --------------------------------------------------\n",
-        "annual_rows = []\n",
-        "\n",
-        "electricity_factor = 1 + growth / 100\n",
-        "heating_factor = 1 + heating_growth / 100\n",
-        "\n",
-        "for month_number in range(1, 13):\n",
-        "\n",
-        "    month_name = calendar.month_abbr[month_number]\n",
-        "\n",
-        "    days = calendar.monthrange(\n",
-        "        projection_year, month_number\n",
-        "    )[1]\n",
-        "\n",
-        "    # Adjust historical monthly consumption\n",
-        "    # for the number of days in the target year.\n",
-        "    historical_days = calendar.monthrange(\n",
-        "        2024, month_number\n",
-        "    )[1]\n",
-        "\n",
-        "    target_month_energy = (\n",
-        "        electricity_2024[month_number - 1]\n",
-        "        / historical_days\n",
-        "        * days\n",
-        "        * electricity_factor\n",
-        "    )\n",
-        "\n",
-        "    target_heating = (\n",
-        "        heating_2024[month_number - 1]\n",
-        "        / historical_days\n",
-        "        * days\n",
-        "        * heating_factor\n",
-        "    )\n",
-        "\n",
-        "    # Scale the daily profile to match the\n",
-        "    # historical monthly electricity total.\n",
-        "    base_daily_energy = daily_profile.sum() * 0.25\n",
-        "\n",
-        "    target_daily_energy = target_month_energy / days\n",
-        "\n",
-        "    scale = target_daily_energy / base_daily_energy\n",
-        "\n",
-        "    monthly_profile = daily_profile * scale\n",
-        "\n",
-        "    for day in range(1, days + 1):\n",
-        "\n",
-        "        current_date = pd.Timestamp(\n",
-        "            projection_year, month_number, day\n",
-        "        )\n",
-        "\n",
-        "        for interval in range(96):\n",
-        "\n",
-        "            timestamp = current_date + pd.Timedelta(\n",
-        "                minutes=15 * interval\n",
-        "            )\n",
-        "\n",
-        "            annual_rows.append({\n",
-        "                \"Timestamp\": timestamp,\n",
-        "                \"Month\": month_name,\n",
-        "                \"Season\": get_season(month_number),\n",
-        "                \"Load_kW\": monthly_profile[interval],\n",
-        "                \"Energy_kWh\": monthly_profile[interval] * 0.25,\n",
-        "                \"Heating_kWh\": target_heating / days / 96,\n",
-        "                \"Status\": (\n",
-        "                    \"Estimated\"\n",
-        "                    if interval < 32\n",
-        "                    else \"Measured shape\"\n",
-        "                )\n",
-        "            })\n",
-        "\n",
-        "annual = pd.DataFrame(annual_rows)\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 7. MONTHLY AND SEASONAL SUMMARIES\n",
-        "# --------------------------------------------------\n",
-        "monthly = annual.groupby(\n",
-        "    \"Month\", sort=False\n",
-        ").agg(\n",
-        "    Electricity_kWh=(\"Energy_kWh\", \"sum\"),\n",
-        "    Heating_kWh=(\"Heating_kWh\", \"sum\"),\n",
-        "    Average_Load_kW=(\"Load_kW\", \"mean\"),\n",
-        "    Peak_Load_kW=(\"Load_kW\", \"max\")\n",
-        ").reset_index()\n",
-        "\n",
-        "monthly[\"Combined_kWh\"] = (\n",
-        "    monthly[\"Electricity_kWh\"] + monthly[\"Heating_kWh\"]\n",
-        ")\n",
-        "\n",
-        "monthly[\"CO2_kg\"] = (\n",
-        "    monthly[\"Electricity_kWh\"] * emission_factor\n",
-        ")\n",
-        "\n",
-        "seasonal = annual.groupby(\"Season\").agg(\n",
-        "    Electricity_kWh=(\"Energy_kWh\", \"sum\"),\n",
-        "    Heating_kWh=(\"Heating_kWh\", \"sum\")\n",
-        ").reindex(season_order).reset_index()\n",
-        "\n",
-        "seasonal[\"Combined_kWh\"] = (\n",
-        "    seasonal[\"Electricity_kWh\"] + seasonal[\"Heating_kWh\"]\n",
-        ")\n",
-        "\n",
-        "annual_electricity = annual[\"Energy_kWh\"].sum()\n",
-        "annual_heating = annual[\"Heating_kWh\"].sum()\n",
-        "\n",
-        "average_load = annual[\"Load_kW\"].mean()\n",
-        "peak_load = annual[\"Load_kW\"].max()\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 8. KPI CARDS\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"Annual Energy Overview\")\n",
-        "\n",
-        "c1, c2, c3, c4 = st.columns(4)\n",
-        "\n",
-        "c1.metric(\n",
-        "    \"Annual electricity\",\n",
-        "    f\"{annual_electricity:,.0f} kWh\"\n",
-        ")\n",
-        "\n",
-        "c2.metric(\n",
-        "    \"Annual heating\",\n",
-        "    f\"{annual_heating:,.0f} kWh\"\n",
-        ")\n",
-        "\n",
-        "c3.metric(\n",
-        "    \"Average load\",\n",
-        "    f\"{average_load:.2f} kW\"\n",
-        ")\n",
-        "\n",
-        "c4.metric(\n",
-        "    \"Peak load\",\n",
-        "    f\"{peak_load:.2f} kW\"\n",
-        ")\n",
-        "\n",
-        "st.info(\n",
-        "    \"Annual energy is calibrated to the 2024 monthly \"\n",
-        "    \"historical consumption, adjusted for the selected \"\n",
-        "    \"growth rate and target-year month lengths.\"\n",
-        ")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 9. DAILY LOAD PROFILE\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"1. Daily 15-Minute Load Profile\")\n",
-        "\n",
-        "fig_daily = px.line(\n",
-        "    daily_df,\n",
-        "    x=\"Time\",\n",
-        "    y=\"Load_kW\",\n",
-        "    color=\"Status\",\n",
-        "    title=\"24-Hour Electricity Demand Profile\",\n",
-        "    markers=False,\n",
-        "    labels={\n",
-        "        \"Time\": \"Time of day\",\n",
-        "        \"Load_kW\": \"Power demand (kW)\",\n",
-        "        \"Status\": \"Data type\"\n",
-        "    }\n",
-        ")\n",
-        "\n",
-        "fig_daily.update_layout(\n",
-        "    hovermode=\"x unified\",\n",
-        "    xaxis=dict(tickangle=-45)\n",
-        ")\n",
-        "\n",
-        "st.plotly_chart(fig_daily, use_container_width=True)\n",
-        "\n",
-        "st.caption(\n",
-        "    \"Measured: 08:00–23:45. Estimated: 00:00–07:45. \"\n",
-        "    \"The estimated section is not actual meter data.\"\n",
-        ")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 10. MONTHLY ELECTRICITY PROFILE\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"2. Monthly Electricity Consumption\")\n",
-        "\n",
-        "fig_monthly = px.bar(\n",
-        "    monthly,\n",
-        "    x=\"Month\",\n",
-        "    y=\"Electricity_kWh\",\n",
-        "    title=\"Projected Monthly Electricity Consumption\",\n",
-        "    text_auto=\".3s\",\n",
-        "    labels={\n",
-        "        \"Electricity_kWh\": \"Consumption (kWh)\",\n",
-        "        \"Month\": \"Month\"\n",
-        "    }\n",
-        ")\n",
-        "\n",
-        "st.plotly_chart(fig_monthly, use_container_width=True)\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 11. SEASONAL COMPARISON\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"3. Seasonal Energy Consumption\")\n",
-        "\n",
-        "fig_season = px.bar(\n",
-        "    seasonal,\n",
-        "    x=\"Season\",\n",
-        "    y=[\"Electricity_kWh\", \"Heating_kWh\"],\n",
-        "    barmode=\"group\",\n",
-        "    title=\"Seasonal Electricity vs Heating\",\n",
-        "    labels={\n",
-        "        \"value\": \"Energy consumption (kWh)\",\n",
-        "        \"variable\": \"Energy type\"\n",
-        "    }\n",
-        ")\n",
-        "\n",
-        "st.plotly_chart(fig_season, use_container_width=True)\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 12. HISTORICAL VS PROJECTED MONTHLY DATA\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"4. Historical vs Projected Consumption\")\n",
-        "\n",
-        "historical_compare = historical.copy()\n",
-        "\n",
-        "historical_compare[\"Projected_Electricity_kWh\"] = (\n",
-        "    monthly[\"Electricity_kWh\"].values\n",
-        ")\n",
-        "\n",
-        "historical_compare[\"Projected_Heating_kWh\"] = (\n",
-        "    monthly[\"Heating_kWh\"].values\n",
-        ")\n",
-        "\n",
-        "fig_compare = px.line(\n",
-        "    historical_compare,\n",
-        "    x=\"Month\",\n",
-        "    y=[\n",
-        "        \"Electricity_kWh\",\n",
-        "        \"Projected_Electricity_kWh\"\n",
-        "    ],\n",
-        "    markers=True,\n",
-        "    title=\"2024 Historical vs Projected Electricity\",\n",
-        "    labels={\n",
-        "        \"value\": \"Electricity (kWh)\",\n",
-        "        \"variable\": \"Dataset\"\n",
-        "    }\n",
-        ")\n",
-        "\n",
-        "st.plotly_chart(fig_compare, use_container_width=True)\n",
-        "\n",
-        "fig_heat = px.line(\n",
-        "    historical_compare,\n",
-        "    x=\"Month\",\n",
-        "    y=[\n",
-        "        \"Heating_kWh\",\n",
-        "        \"Projected_Heating_kWh\"\n",
-        "    ],\n",
-        "    markers=True,\n",
-        "    title=\"2024 Historical vs Projected Heating\",\n",
-        "    labels={\n",
-        "        \"value\": \"Heating (kWh)\",\n",
-        "        \"variable\": \"Dataset\"\n",
-        "    }\n",
-        ")\n",
-        "\n",
-        "st.plotly_chart(fig_heat, use_container_width=True)\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 13. CO2 EMISSIONS\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"5. Estimated CO2 Emissions\")\n",
-        "\n",
-        "annual_co2 = annual_electricity * emission_factor\n",
-        "\n",
-        "st.metric(\n",
-        "    \"Annual electricity-related CO2 emissions\",\n",
-        "    f\"{annual_co2 / 1000:,.2f} tonnes CO2\"\n",
-        ")\n",
-        "\n",
-        "st.caption(\n",
-        "    \"Based on the user-adjustable grid emission factor. \"\n",
-        "    \"Heating emissions are excluded.\"\n",
-        ")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 14. DATA TABLES\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"6. Monthly Data Table\")\n",
-        "\n",
-        "st.dataframe(\n",
-        "    monthly.round(2),\n",
-        "    use_container_width=True,\n",
-        "    hide_index=True\n",
-        ")\n",
-        "\n",
-        "st.header(\"7. Seasonal Data Table\")\n",
-        "\n",
-        "st.dataframe(\n",
-        "    seasonal.round(2),\n",
-        "    use_container_width=True,\n",
-        "    hide_index=True\n",
-        ")\n",
-        "\n",
-        "# --------------------------------------------------\n",
-        "# 15. DOWNLOAD DATA\n",
-        "# --------------------------------------------------\n",
-        "st.header(\"8. Download Projected Data\")\n",
-        "\n",
-        "csv = annual.to_csv(index=False).encode(\"utf-8\")\n",
-        "\n",
-        "st.download_button(\n",
-        "    label=\"Download Full-Year 15-Minute Projection\",\n",
-        "    data=csv,\n",
-        "    file_name=f\"energy_projection_{projection_year}.csv\",\n",
-        "    mime=\"text/csv\"\n",
-        ")\n",
-        "\n",
-        "monthly_csv = monthly.to_csv(index=False).encode(\"utf-8\")\n",
-        "\n",
-        "st.download_button(\n",
-        "    label=\"Download Monthly Summary\",\n",
-        "    data=monthly_csv,\n",
-        "    file_name=f\"monthly_energy_{projection_year}.csv\",\n",
-        "    mime=\"text/csv\"\n",
-        ")\n",
-        "\n",
-        "st.success(\"Energy analysis dashboard generated successfully.\")\n",
-        "\n",
-        "st.warning(\n",
-        "    \"MODEL LIMITATION: The October daily profile is replicated \"\n",
-        "    \"throughout the year after monthly scaling. It does not \"\n",
-        "    \"capture real seasonal changes in the 15-minute load shape. \"\n",
-        "    \"The monthly energy totals are based on 2024 historical \"\n",
-        "    \"data, not an independently validated 2025 forecast.\"\n",
-        ")\n"
-      ],
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "pmL6U3KgbtaG",
-        "outputId": "295585a0-90ee-43fa-8e5e-e1d1f3a686d4"
-      },
-      "execution_count": None,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stderr",
-          "text": [
-            "2026-11-10 17:08:48.040 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.042 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.172 \n",
-            "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
-            "  command:\n",
-            "\n",
-            "    streamlit run /usr/local/lib/python3.13/dist-packages/colab_kernel_launcher.py [ARGUMENTS]\n",
-            "2026-11-10 17:08:48.173 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.175 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.176 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.178 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.179 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.190 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.190 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.191 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.193 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.194 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.198 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.198 Session state does not function when running a script without `streamlit run`\n",
-            "2026-11-10 17:08:48.200 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.201 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.203 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.205 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.206 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.208 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.208 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.209 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.211 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.211 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.212 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.213 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.214 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.215 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.216 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.216 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.218 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.219 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.220 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.221 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.221 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.223 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.224 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.224 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.226 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.227 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.227 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.228 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.229 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.231 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.231 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.233 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.234 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.235 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.701 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.702 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.703 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.704 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.705 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.705 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.706 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.706 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.708 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.708 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.709 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.710 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.712 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.712 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.713 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.714 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.715 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.716 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.716 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.717 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.718 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.719 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.720 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.721 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.721 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:48.722 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.221 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.236 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.237 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.238 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.240 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.241 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.242 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.245 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.248 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.249 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.252 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.253 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.321 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.323 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.325 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.326 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.327 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.328 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.331 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.333 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.335 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.380 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.383 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.384 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.386 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.387 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.388 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.389 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.390 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.391 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.428 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.431 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.433 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.434 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.435 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.436 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.473 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.475 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.476 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.478 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.480 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.481 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.482 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.483 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.484 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.486 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.487 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.487 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.489 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.490 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.491 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.491 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.492 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.493 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.494 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.539 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.540 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.541 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.542 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.544 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.545 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.547 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.548 Please replace `use_container_width` with `width`.\n",
-            "\n",
-            "`use_container_width` will be removed after 2025-12-31.\n",
-            "\n",
-            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
-            "2026-11-10 17:08:49.551 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.552 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.553 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.554 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.555 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.556 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.557 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.963 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.964 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.966 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.967 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.968 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.971 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.973 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.974 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.974 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.977 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.977 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.978 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.979 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.980 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.981 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.982 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.983 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-            "2026-11-10 17:08:49.983 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
-          ]
-        },
-        {
-          "output_type": "execute_result",
-          "data": {
-            "text/plain": [
-              "DeltaGenerator()"
-            ]
-          },
-          "metadata": {},
-          "execution_count": 2
-        }
-      ]
-    }
-  ]
+# --------------------------------------------------
+# PAGE CONFIGURATION
+# --------------------------------------------------
+
+st.set_page_config(
+    page_title="Building Energy Demand Dashboard",
+    page_icon="⚡",
+    layout="wide"
+)
+
+st.title("Building Energy Demand Analysis")
+st.write("Annual and seasonal energy-demand projection using historical consumption and a 15-minute load profile.")
+
+
+# --------------------------------------------------
+# 2024 MONTHLY ENERGY CONSUMPTION DATA
+# --------------------------------------------------
+
+monthly_data = {
+    "Month": [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ],
+    "Heating": [
+        191220, 111450, 117870, 100460, 78950, 78930,
+        81610, 80380, 83082, 96178, 143340, 190890
+    ],
+    "Electricity": [
+        116377, 109825, 119021, 120491, 132937, 147036,
+        159972, 166841, 136687, 124326, 115590, 117714
+    ]
 }
+
+df_monthly = pd.DataFrame(monthly_data)
+
+
+# --------------------------------------------------
+# 15-MINUTE LOAD PROFILE (22 OCTOBER 2025)
+# --------------------------------------------------
+
+load_values = [
+    8.96, 8.34, 8.68, 8.38, 9.03, 8.43, 9.03, 8.73,
+    9.43, 9.13, 9.16, 8.84, 9.67, 10.62, 10.65, 11.04,
+    10.17, 10.71, 10.37, 10.74, 10.83, 10.87, 11.31, 10.51,
+    10.44, 10.99, 11.06, 11.10, 10.47, 10.46, 10.16, 10.77,
+    10.38, 10.29, 10.02, 9.96, 9.99, 9.95, 9.30, 9.60,
+    9.28, 10.56, 9.60, 9.60, 8.96, 9.28, 9.92, 8.96,
+    8.64, 8.64, 8.64, 9.60, 8.64, 8.64, 8.64, 8.64,
+    9.60, 8.64, 8.96, 8.32, 9.28, 9.28, 8.64, 8.96
+]
+
+
+# --------------------------------------------------
+# SIDEBAR SETTINGS
+# --------------------------------------------------
+
+st.sidebar.header("Projection Settings")
+
+year = st.sidebar.selectbox(
+    "Select projection year",
+    [2025, 2026, 2027, 2028]
+)
+
+electricity_growth = st.sidebar.slider(
+    "Annual electricity growth (%)",
+    0.0, 10.0, 0.0, 0.5
+)
+
+heating_growth = st.sidebar.slider(
+    "Annual heating growth (%)",
+    0.0, 10.0, 0.0, 0.5
+)
+
+overnight_load = st.sidebar.slider(
+    "Assumed overnight load (kW)",
+    0.0, 15.0, 9.0, 0.1
+)
+
+emission_factor = st.sidebar.number_input(
+    "Electricity emission factor (kg CO₂/kWh)",
+    min_value=0.0,
+    value=0.35,
+    step=0.01
+)
+
+
+# --------------------------------------------------
+# CREATE A 24-HOUR DAILY LOAD PROFILE
+# --------------------------------------------------
+
+# 00:00 to 07:45: assumed overnight load
+night_values = [overnight_load] * 32
+
+# 08:00 to 23:45: measured values
+daily_profile = night_values + load_values
+
+times = pd.date_range(
+    "2025-10-22 00:00",
+    periods=96,
+    freq="15min"
+)
+
+df_daily = pd.DataFrame({
+    "Time": times,
+    "Load (kW)": daily_profile
+})
+
+df_daily["Hour"] = df_daily["Time"].dt.strftime("%H:%M")
+
+
+# --------------------------------------------------
+# GENERATE ANNUAL 15-MINUTE PROFILE
+# --------------------------------------------------
+
+# Scale monthly consumption to the selected year.
+days_2024 = 366
+
+days_target = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
+
+df_monthly["Days"] = [
+    31, 29, 31, 30, 31, 30,
+    31, 31, 30, 31, 30, 31
+]
+
+# Correct February for non-leap years in the baseline data.
+df_monthly["Days"] = [
+    31, 29, 31, 30, 31, 30,
+    31, 31, 30, 31, 30, 31
+]
+
+df_monthly["Projected Electricity"] = (
+    df_monthly["Electricity"]
+    * (1 + electricity_growth / 100) ** (year - 2024)
+    * df_monthly["Days"].apply(
+        lambda x: x
+    ) / df_monthly["Days"]
+)
+
+# Adjust each month's energy for the number of days in the target year.
+target_days = [
+    31, 29 if days_target == 366 else 28, 31, 30, 31, 30,
+    31, 31, 30, 31, 30, 31
+]
+
+df_monthly["Target Days"] = target_days
+
+df_monthly["Projected Electricity"] = (
+    df_monthly["Electricity"]
+    * (1 + electricity_growth / 100) ** (year - 2024)
+    * df_monthly["Target Days"] / df_monthly["Days"]
+)
+
+df_monthly["Projected Heating"] = (
+    df_monthly["Heating"]
+    * (1 + heating_growth / 100) ** (year - 2024)
+    * df_monthly["Target Days"] / df_monthly["Days"]
+)
+
+
+# Normalise the daily shape so monthly energy totals are preserved.
+profile_shape = np.array(daily_profile, dtype=float)
+
+profile_shape = profile_shape / profile_shape.sum()
+
+annual_records = []
+
+for month in range(1, 13):
+
+    month_days = target_days[month - 1]
+    monthly_energy = df_monthly.loc[
+        month - 1, "Projected Electricity"
+    ]
+
+    # Energy per 15-minute interval in kWh
+    interval_energy = monthly_energy * profile_shape
+
+    # Convert interval energy to average power in kW
+    interval_power = interval_energy / 0.25
+
+    for day in range(1, month_days + 1):
+
+        date = pd.Timestamp(year=year, month=month, day=day)
+
+        for interval in range(96):
+
+            time = date + pd.Timedelta(minutes=15 * interval)
+
+            annual_records.append({
+                "DateTime": time,
+                "Month": time.strftime("%b"),
+                "Season": (
+                    "Winter" if month in [12, 1, 2]
+                    else "Spring" if month in [3, 4, 5]
+                    else "Summer" if month in [6, 7, 8]
+                    else "Autumn"
+                ),
+                "Load (kW)": interval_power[interval]
+            })
+
+df_annual = pd.DataFrame(annual_records)
+
+
+# --------------------------------------------------
+# KEY PERFORMANCE INDICATORS
+# --------------------------------------------------
+
+annual_electricity = df_monthly["Projected Electricity"].sum()
+annual_heating = df_monthly["Projected Heating"].sum()
+
+peak_load = df_annual["Load (kW)"].max()
+average_load = df_annual["Load (kW)"].mean()
+
+annual_co2 = annual_electricity * emission_factor
+
+
+st.subheader(f"Energy Demand Overview – {year}")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric(
+    "Annual Electricity",
+    f"{annual_electricity:,.0f} kWh"
+)
+
+col2.metric(
+    "Annual Heating",
+    f"{annual_heating:,.0f} kWh"
+)
+
+col3.metric(
+    "Average Electricity Load",
+    f"{average_load:.2f} kW"
+)
+
+col4.metric(
+    "Peak Electricity Load",
+    f"{peak_load:.2f} kW"
+)
+
+
+# --------------------------------------------------
+# MONTHLY ENERGY CONSUMPTION
+# --------------------------------------------------
+
+st.subheader("1. Monthly Energy Consumption")
+
+monthly_chart = df_monthly.set_index("Month")[
+    ["Projected Electricity", "Projected Heating"]
+]
+
+st.bar_chart(monthly_chart)
+
+st.dataframe(
+    df_monthly[
+        ["Month", "Projected Electricity", "Projected Heating"]
+    ].round(2),
+    hide_index=True,
+    width="stretch"
+)
+
+
+# --------------------------------------------------
+# SEASONAL ENERGY CONSUMPTION
+# --------------------------------------------------
+
+st.subheader("2. Seasonal Energy Consumption")
+
+season_order = ["Winter", "Spring", "Summer", "Autumn"]
+
+seasonal_data = {
+    "Season": season_order,
+    "Heating": [],
+    "Electricity": []
+}
+
+season_months = {
+    "Winter": [12, 1, 2],
+    "Spring": [3, 4, 5],
+    "Summer": [6, 7, 8],
+    "Autumn": [9, 10, 11]
+}
+
+for season in season_order:
+
+    months = season_months[season]
+
+    seasonal_data["Heating"].append(
+        sum(
+            df_monthly.loc[m - 1, "Projected Heating"]
+            for m in months
+        )
+    )
+
+    seasonal_data["Electricity"].append(
+        sum(
+            df_monthly.loc[m - 1, "Projected Electricity"]
+            for m in months
+        )
+    )
+
+df_seasonal = pd.DataFrame(seasonal_data)
+
+st.bar_chart(
+    df_seasonal.set_index("Season")
+    [["Heating", "Electricity"]]
+)
+
+st.dataframe(
+    df_seasonal.round(2),
+    hide_index=True,
+    width="stretch"
+)
+
+
+# --------------------------------------------------
+# DAILY 15-MINUTE LOAD PROFILE
+# --------------------------------------------------
+
+st.subheader("3. Daily 15-Minute Load Profile")
+
+st.write(
+    "The measured profile covers 08:00–23:45. "
+    "The overnight period is estimated using the selected assumed load."
+)
+
+st.line_chart(
+    df_daily.set_index("Time")[["Load (kW)"]]
+)
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric(
+    "Maximum Daily Load",
+    f"{df_daily['Load (kW)'].max():.2f} kW"
+)
+
+col2.metric(
+    "Minimum Daily Load",
+    f"{df_daily['Load (kW)'].min():.2f} kW"
+)
+
+col3.metric(
+    "Average Daily Load",
+    f"{df_daily['Load (kW)'].mean():.2f} kW"
+)
+
+
+# --------------------------------------------------
+# ANNUAL LOAD PROFILE
+# --------------------------------------------------
+
+st.subheader("4. Annual 15-Minute Load Projection")
+
+st.write(
+    "The measured daily shape is repeated and scaled to match "
+    "the projected monthly electricity consumption."
+)
+
+# Select a sample month to keep the graph readable.
+selected_month = st.selectbox(
+    "Select month to view 15-minute load profile",
+    list(df_annual["Month"].unique())
+)
+
+month_profile = df_annual[
+    df_annual["Month"] == selected_month
+]
+
+st.line_chart(
+    month_profile.set_index("DateTime")[["Load (kW)"]]
+)
+
+
+# --------------------------------------------------
+# SEASONAL LOAD PROFILE
+# --------------------------------------------------
+
+st.subheader("5. Seasonal Load Profile")
+
+season_selected = st.selectbox(
+    "Select season",
+    season_order
+)
+
+season_profile = df_annual[
+    df_annual["Season"] == season_selected
+]
+
+# Display average 15-minute profile for the selected season.
+season_profile = season_profile.copy()
+
+season_profile["Time"] = (
+    season_profile["DateTime"].dt.strftime("%H:%M")
+)
+
+average_season_profile = (
+    season_profile.groupby("Time")["Load (kW)"]
+    .mean()
+)
+
+st.line_chart(average_season_profile)
+
+
+# --------------------------------------------------
+# CO2 EMISSIONS
+# --------------------------------------------------
+
+st.subheader("6. Estimated CO₂ Emissions")
+
+st.metric(
+    "Annual Electricity-Related CO₂ Emissions",
+    f"{annual_co2:,.0f} kg CO₂"
+)
+
+st.write(
+    "Calculation: Annual projected electricity consumption × "
+    "selected electricity emission factor."
+)
+
+
+# --------------------------------------------------
+# DOWNLOAD DATA
+# --------------------------------------------------
+
+st.subheader("7. Download Projected Data")
+
+csv = df_annual.to_csv(index=False).encode("utf-8")
+
+st.download_button(
+    label="Download Annual 15-Minute Load Profile",
+    data=csv,
+    file_name=f"building_load_profile_{year}.csv",
+    mime="text/csv"
+)
+
+monthly_csv = df_monthly.to_csv(index=False).encode("utf-8")
+
+st.download_button(
+    label="Download Monthly Energy Data",
+    data=monthly_csv,
+    file_name=f"monthly_energy_{year}.csv",
+    mime="text/csv"
+)
+
+
+# --------------------------------------------------
+# METHODOLOGY AND LIMITATIONS
+# --------------------------------------------------
+
+st.subheader("8. Methodology and Assumptions")
+
+st.markdown("""
+- Historical 2024 monthly electricity and heating consumption is used as the baseline.
+- The 15-minute load profile from 22 October 2025 is used as the daily electricity-demand shape.
+- The missing overnight period (00:00–07:45) is estimated using the assumed overnight load.
+- The daily profile is scaled separately for each month to match its projected electricity consumption.
+- Heating demand is projected monthly using the selected annual growth rate.
+- Seasonal consumption is calculated using meteorological seasons.
+
+**Important limitations:**
+
+- The same daily load shape is assumed throughout the year.
+- Actual seasonal and weekday/weekend variations are not represented.
+- Overnight demand is estimated, not measured.
+- This is a synthetic projection, not a validated energy forecast.
+- Confirm the original 15-minute readings' units and meter scope before using the results for engineering design.
+""")
