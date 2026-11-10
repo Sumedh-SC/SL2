@@ -601,7 +601,7 @@
         "id": "pmL6U3KgbtaG",
         "outputId": "295585a0-90ee-43fa-8e5e-e1d1f3a686d4"
       },
-      "execution_count": Null,
+      "execution_count": None,
       "outputs": [
         {
           "output_type": "stream",
