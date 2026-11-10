@@ -1,3 +1,5 @@
+pip install streamlit pandas numpy plotly
+
 {
   "nbformat": 4,
   "nbformat_minor": 0,
